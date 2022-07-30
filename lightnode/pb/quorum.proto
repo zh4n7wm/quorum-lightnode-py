@@ -1,0 +1,58 @@
+syntax = "proto3";
+package quorum.pb;
+
+message Object {
+  string id = 1;
+  string type = 2;
+  string content = 6;
+  string name = 8;
+}
+
+enum TrxType {
+  POST = 0;               // post to group
+  SCHEMA = 2;             // group schema
+  PRODUCER = 3;           // update group producer
+  ANNOUNCE = 4;           // self announce, producer or user)
+  REQ_BLOCK_FORWARD = 5;  // request next block
+  REQ_BLOCK_BACKWARD = 6; // request previous block
+  REQ_BLOCK_RESP = 7;     // response request next block
+  BLOCK_SYNCED = 8;       // block for producer to sync (old block)
+  BLOCK_PRODUCED = 9;     // block for producer to merge (newly produced block)
+  USER = 10;              // update group user
+  ASK_PEERID = 11;        // ask owner/producer peerid
+  ASK_PEERID_RESP = 12;   // response ask peerid
+  CHAIN_CONFIG = 13;      // predefined chain configuration
+  APP_CONFIG = 14;        // group app customized configuration
+}
+
+enum TrxStroageType {
+  CHAIN = 0;
+  CACHE = 1;
+}
+
+message Trx {
+  string TrxId = 1;
+  TrxType Type = 2;
+  string GroupId = 3;
+  bytes Data = 4;
+  int64 TimeStamp = 5;
+  string Version = 6;
+  int64 Expired = 7;
+  int64 ResendCount = 8;
+  int64 Nonce = 9;
+  string SenderPubkey = 10;
+  bytes SenderSign = 11;
+  TrxStroageType StorageType = 12;
+}
+
+message Block {
+  string BlockId = 1;
+  string GroupId = 2;
+  string PrevBlockId = 3;
+  bytes PreviousHash = 4;
+  repeated Trx Trxs = 5;
+  string ProducerPubKey = 6;
+  bytes Hash = 7;
+  bytes Signature = 8;
+  int64 TimeStamp = 9;
+}

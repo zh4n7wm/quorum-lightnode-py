@@ -1,0 +1,24 @@
+# The format of this file isn't really documented; just use --generate-rcfile
+[MASTER]
+# Add <file or directory> to the black list. It should be a base name, not a
+# path. You may set this option multiple times.
+ignore=.git,tests
+ignore-patterns=.*_pb2
+load-plugins=pylint_protobuf
+
+[MESSAGES CONTROL]
+disable=raw-checker-failed,
+    bad-inline-option,
+    locally-disabled,
+    file-ignored,
+    suppressed-message,
+    useless-suppression,
+    deprecated-pragma,
+    use-symbolic-message-instead,
+    C0116,
+    R0902,
+    C0103,
+    C0114,
+    C0115,
+    R1710,
+    global-statement,
