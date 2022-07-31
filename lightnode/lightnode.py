@@ -3,11 +3,13 @@ from typing import Any
 from urllib.parse import urljoin
 
 import requests
+from google.protobuf.json_format import MessageToDict
 
+from .content import get_content_param
 from .seed import decode_group_seed
 from .storage import LocalSeed
-from .trx import prepare_send_trx
-from .type import DecodeGroupSeedResult
+from .trx import decode_trx_data, prepare_send_trx
+from .type import Content, DecodeGroupSeedResult
 from .utils import get_logger
 
 logger = get_logger("lightnode")
@@ -74,5 +76,32 @@ class LightNode:
         logger.debug("send_trx response: %s", resp)
         return resp.get("trx_id")
 
-    def get_contents(self) -> None:
-        pass
+    def get_contents(  # pylint: disable=too-many-locals
+        self,
+        group_id: str,
+        start_trx: str | None = None,
+        count: int = 20,
+        reverse: bool = False,
+    ) -> list[Content]:
+        seed = self.localseed.seeds.get(group_id)
+        if not seed:
+            raise ValueError("group not found")
+        aes_key = bytes.fromhex(seed.seed.cipher_key)
+        payload = get_content_param(aes_key, group_id, start_trx, count, reverse)
+
+        chain_api = seed.chain_urls[0]
+        url = urljoin(chain_api.baseurl, f"/api/v1/node/groupctn/{group_id}")
+        headers = {
+            "Authorization": f"Bearer {chain_api.jwt}",
+        }
+        req = requests.post(url, json=payload, headers=headers)
+        result: list[Content] = []
+        for item in req.json():
+            obj = decode_trx_data(aes_key, item["Data"].encode())
+            print(f"xxx item x: {item}")
+            _content = {**item, "Data": MessageToDict(obj)}
+            print(f"xxx _content: {_content}")
+            content = Content(**_content)
+            print(f"xxx content: {content}")
+            result.append(content)
+        return result
