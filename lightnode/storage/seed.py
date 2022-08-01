@@ -39,7 +39,26 @@ class LocalSeed:
         self.seeds[seed.seed.group_id] = seed
         self._dump()
 
-    def update_chain_api(self, group_id: str, chain_url: str) -> None:
+    def remove_seed(self, group_id: str) -> None:
+        if group_id not in self.seeds:
+            raise ValueError("not found group")
+        del self.seeds[group_id]
+        self._dump()
+
+    def get_all_seeds(self) -> dict[str, DecodeGroupSeedResult]:
+        return self.seeds
+
+    def get_seed(self, group_id: str) -> DecodeGroupSeedResult:
+        seed = self.seeds.get(group_id)
+        if not seed:
+            raise ValueError("group not found")
+        return seed
+
+    def get_chain_urls(self, group_id: str) -> list[ChainURL]:
+        seed = self.get_seed(group_id)
+        return seed.chain_urls
+
+    def update_chain_url(self, group_id: str, chain_url: str) -> None:
         seed = self.seeds.get(group_id)
         if not seed:
             logger.warning("can not find local group seed by group_id: %s", group_id)

@@ -9,7 +9,7 @@ from .content import get_content_param
 from .seed import decode_group_seed
 from .storage import LocalSeed
 from .trx import decode_trx_data, prepare_send_trx
-from .type import Content, DecodeGroupSeedResult
+from .type import Content, DecodeGroupSeedResult, Trx
 from .utils import get_logger
 
 logger = get_logger("lightnode")
@@ -35,10 +35,36 @@ class LightNode:
         seed = self.decode_group_seed(seed_url)
         self.localseed.save_seed(seed)
 
-    def get_group_seed(self, group_id: str) -> DecodeGroupSeedResult | None:
-        return self.localseed.seeds.get(group_id)
+    def leave_group(self, group_id: str) -> None:
+        self.localseed.remove_seed(group_id)
 
-    def send_trx(
+    def get_group_seed(self, group_id: str) -> DecodeGroupSeedResult:
+        if group_id not in self.localseed.seeds:
+            raise ValueError("group not found")
+        return self.localseed.seeds[group_id]
+
+    def list_group_seeds(self) -> dict[str, DecodeGroupSeedResult]:
+        return self.localseed.get_all_seeds()
+
+    def update_chain_api(self, group_id: str, chain_url: str) -> None:
+        self.localseed.update_chain_url(group_id, chain_url)
+
+    def get_trx(self, group_id: str, trx_id: str) -> Trx:
+        seed = self.get_group_seed(group_id)
+        aes_key = bytes.fromhex(seed.seed.cipher_key)
+        chain_url = self.localseed.get_chain_urls(group_id)[0]
+        url = urljoin(chain_url.baseurl, f"/api/v1/trx/{group_id}/{trx_id}")
+        headers = {
+            "Authorization": f"Bearer {chain_url.jwt}",
+        }
+        req = requests.get(url, headers=headers)
+        req.raise_for_status()
+        data = req.json()
+        obj = decode_trx_data(aes_key, data["Data"].encode())
+        trx = Trx(**{**data, "Data": obj})
+        return trx
+
+    def post_to_group(
         self, group_id: str, private_key: bytes, obj: dict[str, Any]
     ) -> str | None:
         if not obj:
@@ -76,7 +102,7 @@ class LightNode:
         logger.debug("send_trx response: %s", resp)
         return resp.get("trx_id")
 
-    def get_contents(  # pylint: disable=too-many-locals
+    def get_group_contents(  # pylint: disable=too-many-locals
         self,
         group_id: str,
         start_trx: str | None = None,

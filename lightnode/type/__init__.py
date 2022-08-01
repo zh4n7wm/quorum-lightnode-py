@@ -4,11 +4,10 @@ common types
 from .content import Content, EncryptedContent
 from .object import Image, Object
 from .seed import ChainURL, DecodeGroupSeedResult, GroupSeed
-from .type import Block, Trx
+from .trx import Trx
 
 __all__ = [
     "Trx",
-    "Block",
     "ChainURL",
     "GroupSeed",
     "DecodeGroupSeedResult",

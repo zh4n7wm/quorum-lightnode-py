@@ -9,4 +9,4 @@ obj = {
     "type": "Note",
     "content": "test 2 ..",
 }
-print(lightnode.send_trx(group_id, private_key, obj))
+print(lightnode.post_to_group(group_id, private_key, obj))

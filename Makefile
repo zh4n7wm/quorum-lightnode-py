@@ -6,7 +6,7 @@ install-dev: clean
 	pip install -q -e .[dev]
 
 lint: clean-pyc
-	pylint lightnode tests
+	pylint lightnode example tests
 
 test: clean-pyc install-dev
 	pytest
