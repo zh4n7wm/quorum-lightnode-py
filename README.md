@@ -1,6 +1,12 @@
-# quorum lightnode sdk for Python
+# quorum lightnode for Python
 
-## use lightnode sdk
+## install
+
+```bash
+pip install -U quorum-lightnode
+```
+
+## use quorum-lightnode
 
 ### join group and get group seed from local
 

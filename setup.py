@@ -24,13 +24,13 @@ version = find_version("lightnode", "__init__.py")
 github_url = "https://github.com/zhangwm404/quorum-lightnode-py"
 
 setup(
-    name="quorum-lightnode-sdk",
+    name="quorum-lightnode",
     version=version,
     url=github_url,
     license="MIT",
     author="zhangwm404",
     author_email="zhangwm404@gmail.com",
-    description="quorum lightnode sdk for python",
+    description="quorum lightnode for python",
     long_description=readme,
     long_description_content_type="text/markdown",
     packages=find_packages(exclude=["tests", "example"]),
