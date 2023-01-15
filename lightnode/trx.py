@@ -6,7 +6,6 @@ import uuid
 from typing import Any, Dict
 
 import eth_keys
-from google.protobuf import any_pb2
 
 from .pb import quorum_pb2 as pbQuorum
 from .utils import aes_decrypt, aes_encrypt, get_logger
@@ -31,10 +30,7 @@ def decode_trx_data(
 
     trx_enc_bytes = base64.b64decode(trx_data)
     trx_bytes = aes_decrypt(aes_key, trx_enc_bytes)
-    any_obj = any_pb2.Any().FromString(trx_bytes)  # pylint: disable=no-member
-    obj = pbQuorum.Object()  # pylint: disable=no-member
-    any_obj.Unpack(obj)
-    return obj
+    return trx_bytes
 
 
 def get_sender_pubkey(private_key: bytes) -> str:
@@ -45,12 +41,7 @@ def get_sender_pubkey(private_key: bytes) -> str:
 def prepare_send_trx(  # pylint: disable=too-many-locals
     group_id: str, aes_key: bytes, private_key: bytes, obj: Dict[str, Any]
 ) -> Dict[str, str]:
-    obj_pb = pbQuorum.Object(**obj)  # pylint: disable=no-member
-    any_obj_pb = any_pb2.Any()  # pylint: disable=no-member
-    any_obj_pb.Pack(obj_pb, type_url_prefix="type.googleapis.com/")
-    logger.debug("protobuf object: %s", any_obj_pb)
-
-    data = any_obj_pb.SerializeToString()
+    data = json.dumps(obj).encode()
     encrypted = aes_encrypt(aes_key, data)
 
     priv = eth_keys.keys.PrivateKey(private_key)

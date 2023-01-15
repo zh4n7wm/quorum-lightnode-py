@@ -3,7 +3,6 @@ from typing import Any
 from urllib.parse import urljoin
 
 import requests
-from google.protobuf.json_format import MessageToDict
 
 from .content import get_content_param
 from .seed import decode_group_seed
@@ -99,7 +98,10 @@ class LightNode:
         }
         req = requests.post(url, json=trx_obj, headers=headers)
         resp = req.json()
-        logger.debug("send_trx response: %s", resp)
+        if req.status_code >= 400:
+            logger.error("send_trx response: %s", resp)
+        else:
+            logger.debug("send_trx response: %s", resp)
         return resp.get("trx_id")
 
     def get_group_contents(  # pylint: disable=too-many-locals
@@ -108,7 +110,7 @@ class LightNode:
         start_trx: str | None = None,
         count: int = 20,
         reverse: bool = False,
-    ) -> list[Content]:
+    ) -> list[dict[str, Any]]:
         seed = self.localseed.seeds.get(group_id)
         if not seed:
             raise ValueError("group not found")
@@ -124,10 +126,6 @@ class LightNode:
         result: list[Content] = []
         for item in req.json():
             obj = decode_trx_data(aes_key, item["Data"].encode())
-            print(f"xxx item x: {item}")
-            _content = {**item, "Data": MessageToDict(obj)}
-            print(f"xxx _content: {_content}")
-            content = Content(**_content)
-            print(f"xxx content: {content}")
-            result.append(content)
+            _content = {**item, "Data": obj.decode()}
+            result.append(_content)
         return result
