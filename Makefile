@@ -38,3 +38,6 @@ clean-pyc:
 	@find . -name '*.pyc' -exec rm -f {} +
 	@find . -name '*.pyo' -exec rm -f {} +
 	@find . -name '*~' -exec rm -f {} +
+
+gen-proto:
+	cd lightnode/pb && protoc -I=. --python_out=. ./quorum.proto

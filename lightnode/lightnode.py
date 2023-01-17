@@ -6,11 +6,12 @@ from urllib.parse import urljoin
 import requests
 
 from .content import get_content_param
+from .announce import get_announce_param
 from .seed import decode_group_seed
 from .storage import LocalSeed
 from .trx import decode_private_trx_data, decode_public_trx_data, prepare_send_trx
 from .type import Content, DecodeGroupSeedResult
-from .utils import get_logger
+from .utils import get_logger, pretty_print
 
 logger = get_logger("lightnode")
 
@@ -167,3 +168,32 @@ class LightNode:
             _content = {**item, "Data": json.loads(obj.decode())}
             result.append(_content)
         return result
+
+    def announce(  # pylint: disable=too-many-locals disable=too-many-arguments
+        self,
+        encrypt_pubkey: str,
+        private_key: bytes,
+        group_id: str,
+        action: str,
+        _type: str,
+        memo: str | None = None,
+    ):
+        seed = self.localseed.seeds.get(group_id)
+        if not seed:
+            raise ValueError("group not found")
+
+        aes_key = bytes.fromhex(seed.seed.cipher_key)
+        payload = get_announce_param(
+            aes_key, encrypt_pubkey, private_key, group_id, action, _type, memo
+        )
+
+        chain_api = seed.chain_urls[0]
+        url = urljoin(chain_api.baseurl, f"/api/v1/node/announce/{group_id}")
+        headers = {
+            "Authorization": f"Bearer {chain_api.jwt}",
+        }
+        req = requests.post(url, json=payload, headers=headers)
+        if req.status_code >= 400:
+            pretty_print(req.json())
+        else:
+            return req.json()
