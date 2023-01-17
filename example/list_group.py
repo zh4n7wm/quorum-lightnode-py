@@ -1,4 +1,5 @@
 from lightnode import LightNode
+from lightnode.utils import pretty_print
 
 lightnode = LightNode("/tmp/lightnode")
-print(lightnode.list_group_seeds())
+pretty_print(lightnode.list_group_seeds())

@@ -16,7 +16,7 @@ def urlsafe_b64decode(s: bytes | str) -> bytes:
 def _get_value_from_query(query: dict, key: str) -> str:
     val = query.get(key)
     if not val:
-        raise KeyError("can not find key or value is empty")
+        raise KeyError(f"can not find key: {key} or value is empty")
     if not isinstance(val, list):
         raise ValueError("value is not a list")
 

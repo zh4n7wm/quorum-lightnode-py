@@ -2,6 +2,7 @@ import os
 from datetime import datetime
 
 from lightnode import LightNode
+from lightnode.utils import pretty_print
 
 lightnode = LightNode("/tmp/lightnode")
 group_id = os.environ["GROUP_ID"]
@@ -10,4 +11,4 @@ obj = {
     "type": "Note",
     "content": "test 2 .. " + datetime.now().isoformat(),
 }
-print(lightnode.post_to_group(group_id, private_key, obj))
+pretty_print(lightnode.post_to_group(group_id, private_key, obj))

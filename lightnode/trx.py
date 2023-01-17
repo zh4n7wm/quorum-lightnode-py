@@ -8,14 +8,29 @@ from typing import Any, Dict
 import eth_keys
 
 from .pb import quorum_pb2 as pbQuorum
-from .utils import aes_decrypt, aes_encrypt, get_logger
+from .utils import (
+    aes_decrypt,
+    aes_encrypt,
+    age_decrypt,
+    age_encrypt,
+    age_privkey_from_str,
+    get_logger,
+)
 
 logger = get_logger("trx")
 nonce = 1
 
 
+def decode_public_trx_data(aes_key: bytes, data: str):
+    return decode_trx_data(aes_key, None, data)
+
+
+def decode_private_trx_data(age_key: str, data: str):
+    return decode_trx_data(None, age_key, data)
+
+
 def decode_trx_data(
-    aes_key: bytes, data: str
+    aes_key: bytes | None, age_priv_key: str | None, data: str
 ) -> pbQuorum.Object:  # pylint: disable=no-member
     """
     1. curl 调用 POST /api/v1/group/content 发 post
@@ -29,7 +44,15 @@ def decode_trx_data(
         trx_data = data
 
     trx_enc_bytes = base64.b64decode(trx_data)
-    trx_bytes = aes_decrypt(aes_key, trx_enc_bytes)
+    trx_bytes = None
+    if aes_key:
+        trx_bytes = aes_decrypt(aes_key, trx_enc_bytes)
+    elif age_priv_key:
+        age_key = age_privkey_from_str(age_priv_key)
+        trx_bytes = age_decrypt(age_key, trx_enc_bytes)
+    else:
+        raise ValueError("aes_key and age_key both empty")
+
     return trx_bytes
 
 
@@ -39,10 +62,18 @@ def get_sender_pubkey(private_key: bytes) -> str:
 
 
 def prepare_send_trx(  # pylint: disable=too-many-locals
-    group_id: str, aes_key: bytes, private_key: bytes, obj: Dict[str, Any]
+    group_id: str,
+    aes_key: bytes,
+    private_key: bytes,
+    obj: Dict[str, Any],
+    recipients: list[str] | None,
 ) -> Dict[str, str]:
     data = json.dumps(obj).encode()
-    encrypted = aes_encrypt(aes_key, data)
+    encrypted = None
+    if not recipients:
+        encrypted = aes_encrypt(aes_key, data)
+    else:
+        encrypted = age_encrypt(recipients, data)
 
     priv = eth_keys.keys.PrivateKey(private_key)
     sender_pubkey = get_sender_pubkey(private_key)

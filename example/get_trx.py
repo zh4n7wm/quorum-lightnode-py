@@ -1,8 +1,10 @@
 import os
 
 from lightnode import LightNode
+from lightnode.utils import pretty_print
 
 lightnode = LightNode("/tmp/lightnode")
 group_id = os.environ["GROUP_ID"]
-trx_id = "dc13822b-ddbc-4e8b-b279-4be444396fe8"
-print(lightnode.get_trx(group_id, trx_id))
+age_priv_key = os.environ["ENCRYPT_PRIVARE_KEY"]
+trx_id = "7c6da420-59b6-42e6-8794-894c793e735f"
+pretty_print(lightnode.get_trx(group_id, trx_id, age_priv_key))

@@ -1,3 +1,4 @@
+import json
 import pathlib
 from typing import Any
 from urllib.parse import urljoin
@@ -7,8 +8,8 @@ import requests
 from .content import get_content_param
 from .seed import decode_group_seed
 from .storage import LocalSeed
-from .trx import decode_trx_data, prepare_send_trx
-from .type import Content, DecodeGroupSeedResult, Trx
+from .trx import decode_private_trx_data, decode_public_trx_data, prepare_send_trx
+from .type import Content, DecodeGroupSeedResult
 from .utils import get_logger
 
 logger = get_logger("lightnode")
@@ -48,9 +49,21 @@ class LightNode:
     def update_chain_api(self, group_id: str, chain_url: str) -> None:
         self.localseed.update_chain_url(group_id, chain_url)
 
-    def get_trx(self, group_id: str, trx_id: str) -> Trx:
+    def get_encrypt_pub_keys(self, group_id: str) -> list[str]:
+        chain_url = self.localseed.get_chain_urls(group_id)[0]
+        url = urljoin(chain_url.baseurl, f"/api/v1/node/getencryptpubkeys/{group_id}")
+        headers = {
+            "Authorization": f"Bearer {chain_url.jwt}",
+        }
+        req = requests.get(url, headers=headers)
+        req.raise_for_status()
+        data = req.json()
+        return data.get("keys")
+
+    def get_trx(
+        self, group_id: str, trx_id: str, age_priv_key: str | None = None
+    ) -> dict[str, Any]:
         seed = self.get_group_seed(group_id)
-        aes_key = bytes.fromhex(seed.seed.cipher_key)
         chain_url = self.localseed.get_chain_urls(group_id)[0]
         url = urljoin(chain_url.baseurl, f"/api/v1/trx/{group_id}/{trx_id}")
         headers = {
@@ -59,8 +72,15 @@ class LightNode:
         req = requests.get(url, headers=headers)
         req.raise_for_status()
         data = req.json()
-        obj = decode_trx_data(aes_key, data["Data"].encode())
-        trx = Trx(**{**data, "Data": obj})
+        is_private_group = seed.seed.encryption_type == "private"
+        if is_private_group:
+            if not age_priv_key:
+                raise ValueError("empty age key for private group")
+            obj = decode_private_trx_data(age_priv_key, data["Data"].encode())
+        else:
+            aes_key = bytes.fromhex(seed.seed.cipher_key)
+            obj = decode_public_trx_data(aes_key, data["Data"].encode())
+        trx = {**data, "Data": json.loads(obj)}
         return trx
 
     def post_to_group(
@@ -80,8 +100,16 @@ class LightNode:
             )
             return
 
+        is_private_group = seed.seed.encryption_type == "private"
+        recipients = None
+        if is_private_group:
+            recipients = self.get_encrypt_pub_keys(group_id)
+            if not recipients:
+                logger.error("can not get encrypt recipients")
+                return
+
         aes_key = bytes.fromhex(seed.seed.cipher_key)
-        trx_obj = prepare_send_trx(group_id, aes_key, private_key, obj)
+        trx_obj = prepare_send_trx(group_id, aes_key, private_key, obj, recipients)
         print(trx_obj)
 
         if not isinstance(seed.chain_urls, list) or not seed.chain_urls:
@@ -104,16 +132,18 @@ class LightNode:
             logger.debug("send_trx response: %s", resp)
         return resp.get("trx_id")
 
-    def get_group_contents(  # pylint: disable=too-many-locals
+    def get_group_contents(  # pylint: disable=too-many-locals disable=too-many-arguments
         self,
         group_id: str,
         start_trx: str | None = None,
         count: int = 20,
         reverse: bool = False,
+        age_priv_key: str | None = None,
     ) -> list[dict[str, Any]]:
         seed = self.localseed.seeds.get(group_id)
         if not seed:
             raise ValueError("group not found")
+
         aes_key = bytes.fromhex(seed.seed.cipher_key)
         payload = get_content_param(aes_key, group_id, start_trx, count, reverse)
 
@@ -124,8 +154,16 @@ class LightNode:
         }
         req = requests.post(url, json=payload, headers=headers)
         result: list[Content] = []
+        is_private_group = seed.seed.encryption_type == "private"
         for item in req.json():
-            obj = decode_trx_data(aes_key, item["Data"].encode())
-            _content = {**item, "Data": obj.decode()}
+            obj = None
+            if not is_private_group:
+                obj = decode_public_trx_data(aes_key, item["Data"].encode())
+            else:
+                if not age_priv_key:
+                    raise ValueError("empty age private key for private group")
+                obj = decode_private_trx_data(age_priv_key, item["Data"].encode())
+
+            _content = {**item, "Data": json.loads(obj.decode())}
             result.append(_content)
         return result

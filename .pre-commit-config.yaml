@@ -6,24 +6,12 @@ default_language_version:
   python: python3.10 # needed for match
 
 repos:
-  - repo: https://github.com/psf/black
-    rev: 22.6.0
-    hooks:
-      - id: black
-
   - repo: https://github.com/asottile/pyupgrade
     rev: v2.37.3
     hooks:
       - id: pyupgrade
         args: [--py3-plus, --keep-percent-format]
         exclude: "tests/test_slots.py"
-
-  - repo: https://github.com/PyCQA/isort
-    rev: 5.10.1
-    hooks:
-      - id: isort
-        additional_dependencies: [toml]
-        files: \.py$
 
   - repo: local
     hooks:

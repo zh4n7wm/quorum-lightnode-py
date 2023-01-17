@@ -146,3 +146,6 @@ tags
 
 # macos
 .DS_Store
+
+.env
+.envrc

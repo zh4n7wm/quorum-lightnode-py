@@ -42,6 +42,7 @@ setup(
         "pycryptodome",
         "protobuf",
         "dataclasses-json",
+        "pyrage",
     ],
     extras_require={
         "dev": [
