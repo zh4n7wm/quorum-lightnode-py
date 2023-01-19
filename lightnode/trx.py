@@ -32,11 +32,6 @@ def decode_private_trx_data(age_key: str, data: str):
 def decode_trx_data(
     aes_key: bytes | None, age_priv_key: str | None, data: str
 ) -> pbQuorum.Object:  # pylint: disable=no-member
-    """
-    1. curl 调用 POST /api/v1/group/content 发 post
-    2. curl 调用 GET /api/v1/trx/:group_id/:trx_id 获取刚发的 Data 数据
-    3. 然后通过下面代码解出来
-    """
     trx_data = b""
     if isinstance(data, str):
         trx_data = data.encode()
@@ -86,7 +81,7 @@ def prepare_send_trx(  # pylint: disable=too-many-locals
         "GroupId": group_id,
         "Data": encrypted,
         "TimeStamp": int(now * 1e9),
-        "Version": "1.0.0",
+        "Version": "2.0.0",
         "Expired": int((now + 30) * 1e9),
         "Nonce": nonce,
         "SenderPubkey": sender_pubkey,

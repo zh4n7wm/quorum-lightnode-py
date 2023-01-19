@@ -43,18 +43,29 @@ message Trx {
   string SenderPubkey = 10;
   bytes SenderSign = 11;
   TrxStroageType StorageType = 12;
+  bool SudoTrx = 13;
+}
+
+message Witnesses {
+  string groupId = 1;
+  int64 epoch = 2;
+  bytes TrxHash = 3;
+  string WitnessPubkey = 4;
+  bytes Signature = 5;
 }
 
 message Block {
-  string BlockId = 1;
-  string GroupId = 2;
-  string PrevBlockId = 3;
-  bytes PreviousHash = 4;
-  repeated Trx Trxs = 5;
-  string ProducerPubKey = 6;
-  bytes Hash = 7;
-  bytes Signature = 8;
-  int64 TimeStamp = 9;
+  string GroupId = 1;
+  int64 Epoch = 2;
+  bytes PrevEpochHash = 3;
+  repeated Trx Trxs = 4;
+  bytes EpochHash = 5;
+  repeated Witnesses Witesses = 6;
+  int64 TimeStamp = 7;
+  bytes BlockHash = 8;
+  string BookkeepingPubkey = 9;
+  bytes BookkeepingSignature = 10;
+  bool SudoBlock = 11;
 }
 
 enum AnnounceType {

@@ -39,8 +39,8 @@ def extra_timestamp_from_query(query: dict, key: str) -> int:
 def hash_block(block: pbQuorum.Block) -> bytes:  # pylint: disable=no-member
     new_block = pbQuorum.Block()  # pylint: disable=no-member
     new_block.CopyFrom(block)
-    new_block.Hash = b""
-    new_block.Signature = b""
+    new_block.BlockHash = b""
+    new_block.BookkeepingSignature = b""
     new_block_bytes = new_block.SerializeToString()
     return hashlib.sha256(new_block_bytes).digest()
 
@@ -63,16 +63,19 @@ def decode_group_seed(seed_url: str) -> DecodeGroupSeedResult:
     group_id = extract_uuid_from_query(query, "g")
 
     genesis_block = pbQuorum.Block(  # pylint: disable=no-member
-        BlockId=extract_uuid_from_query(query, "b"),
+        Epoch=0,
         GroupId=group_id,
-        TimeStamp=extra_timestamp_from_query(query, "t"),
-        PrevBlockId="",
-        PreviousHash=b"",
-        ProducerPubKey=_get_value_from_query(query, "k"),
+        PrevEpochHash=None,
         Trxs=None,
-        Signature=urlsafe_b64decode(_get_value_from_query(query, "s")),
     )
-    genesis_block.Hash = hash_block(genesis_block)
+    genesis_block.BlockHash = hash_block(genesis_block)
+    # genesis_block.Witesses = []
+    genesis_block.BookkeepingPubkey = _get_value_from_query(query, "k")
+    genesis_block.TimeStamp = extra_timestamp_from_query(query, "t")
+    genesis_block.BlockHash = hash_block(genesis_block)
+    genesis_block.BookkeepingSignature = urlsafe_b64decode(
+        _get_value_from_query(query, "s")
+    )
 
     consensus_type = "pos" if _get_value_from_query(query, "n") == "1" else "poa"
     encryption_type = (
@@ -85,8 +88,8 @@ def decode_group_seed(seed_url: str) -> DecodeGroupSeedResult:
         consensus_type=consensus_type,
         encryption_type=encryption_type,
         cipher_key=urlsafe_b64decode(_get_value_from_query(query, "c")).hex(),
-        owner_pubkey=genesis_block.ProducerPubKey,
-        signature=genesis_block.Signature.hex(),
+        owner_pubkey=genesis_block.BookkeepingPubkey,
+        signature=genesis_block.BookkeepingSignature.hex(),
         app_key=unquote(_get_value_from_query(query, "y")),
     )
 
