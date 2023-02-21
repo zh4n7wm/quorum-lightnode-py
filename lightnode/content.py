@@ -1,5 +1,6 @@
 import base64
 import json
+from typing import Union
 
 from .utils import aes_encrypt
 
@@ -7,7 +8,7 @@ from .utils import aes_encrypt
 def get_content_param(
     aes_key: bytes,
     group_id: str,
-    start_trx: str | None = None,
+    start_trx: Union[str, None] = None,
     count: int = 20,
     reverse: bool = False,
 ) -> dict[str, str]:

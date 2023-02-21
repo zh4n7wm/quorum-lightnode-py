@@ -2,6 +2,7 @@ import json
 import pathlib
 from typing import Any
 from urllib.parse import urljoin
+from typing import Union
 
 import requests
 
@@ -62,7 +63,7 @@ class LightNode:
         return data.get("keys")
 
     def get_trx(
-        self, group_id: str, trx_id: str, age_priv_key: str | None = None
+        self, group_id: str, trx_id: str, age_priv_key: Union[str, None] = None
     ) -> dict[str, Any]:
         seed = self.get_group_seed(group_id)
         chain_url = self.localseed.get_chain_urls(group_id)[0]
@@ -86,7 +87,7 @@ class LightNode:
 
     def post_to_group(
         self, group_id: str, private_key: bytes, obj: dict[str, Any]
-    ) -> str | None:
+    ) -> Union[str, None]:
         if not obj:
             raise ValueError("empty obj")
         if not isinstance(obj, dict):
@@ -136,10 +137,10 @@ class LightNode:
     def get_group_contents(  # pylint: disable=too-many-locals disable=too-many-arguments
         self,
         group_id: str,
-        start_trx: str | None = None,
+        start_trx: Union[str, None] = None,
         count: int = 20,
         reverse: bool = False,
-        age_priv_key: str | None = None,
+        age_priv_key: Union[str, None] = None,
     ) -> list[dict[str, Any]]:
         seed = self.localseed.seeds.get(group_id)
         if not seed:
@@ -176,7 +177,7 @@ class LightNode:
         group_id: str,
         action: str,
         _type: str,
-        memo: str | None = None,
+        memo: Union[str, None] = None,
     ):
         seed = self.localseed.seeds.get(group_id)
         if not seed:

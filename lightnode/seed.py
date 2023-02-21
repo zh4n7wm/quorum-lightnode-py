@@ -1,13 +1,14 @@
 import base64
 import hashlib
 import uuid
+from typing import Union
 from urllib.parse import parse_qs, unquote, urlparse
 
 from .pb import quorum_pb2 as pbQuorum
 from .type import ChainURL, DecodeGroupSeedResult, GroupSeed
 
 
-def urlsafe_b64decode(s: bytes | str) -> bytes:
+def urlsafe_b64decode(s: Union[bytes, str]) -> bytes:
     if isinstance(s, str):
         s = s.encode()
     return base64.urlsafe_b64decode(s + b"=" * (len(s) % 4))

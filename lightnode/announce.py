@@ -1,6 +1,7 @@
 import base64
 import hashlib
 import time
+from typing import Union
 
 from lightnode.utils import aes_encrypt
 
@@ -15,7 +16,7 @@ def get_announce_param(
     group_id: str,
     action: str,
     _type: str,
-    memo: str | None = None,
+    memo: Union[str, None] = None,
 ) -> dict[str, str]:
     eth_priv = eth_keys.keys.PrivateKey(private_key)
 

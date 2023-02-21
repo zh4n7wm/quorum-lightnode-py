@@ -3,7 +3,7 @@ import hashlib
 import json
 import time
 import uuid
-from typing import Any, Dict
+from typing import Any, Dict, Union
 
 import eth_keys
 
@@ -30,7 +30,7 @@ def decode_private_trx_data(age_key: str, data: str):
 
 
 def decode_trx_data(
-    aes_key: bytes | None, age_priv_key: str | None, data: str
+    aes_key: Union[bytes, None], age_priv_key: Union[str, None], data: str
 ) -> pbQuorum.Object:  # pylint: disable=no-member
     trx_data = b""
     if isinstance(data, str):
@@ -61,7 +61,7 @@ def prepare_send_trx(  # pylint: disable=too-many-locals
     aes_key: bytes,
     private_key: bytes,
     obj: Dict[str, Any],
-    recipients: list[str] | None,
+    recipients: Union[list[str], None],
 ) -> Dict[str, str]:
     data = json.dumps(obj).encode()
     encrypted = None
