@@ -1,7 +1,7 @@
 import base64
 import hashlib
 import time
-from typing import Union
+from typing import Union, Dict
 
 from lightnode.utils import aes_encrypt
 
@@ -17,7 +17,7 @@ def get_announce_param(
     action: str,
     _type: str,
     memo: Union[str, None] = None,
-) -> dict[str, str]:
+) -> Dict[str, str]:
     eth_priv = eth_keys.keys.PrivateKey(private_key)
 
     item = pbQuorum.AnnounceItem()

@@ -1,6 +1,6 @@
 import base64
 import json
-from typing import Union
+from typing import Union, Dict
 
 from .utils import aes_encrypt
 
@@ -11,7 +11,7 @@ def get_content_param(
     start_trx: Union[str, None] = None,
     count: int = 20,
     reverse: bool = False,
-) -> dict[str, str]:
+) -> Dict[str, str]:
     params = {
         "group_id": group_id,
         "reverse": "true" if reverse is True else "false",

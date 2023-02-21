@@ -1,6 +1,7 @@
 import copy
 import json
 import pathlib
+from typing import Dict, List
 
 from ..seed import parse_chain_url
 from ..type import ChainURL, DecodeGroupSeedResult
@@ -13,9 +14,9 @@ class LocalSeed:
     def __init__(self, save_dir: str) -> None:
         self.save_dir = save_dir
         self.save_path = pathlib.Path(self.save_dir) / "seed.json"
-        self.seeds: dict[str, DecodeGroupSeedResult] = self._load()
+        self.seeds: Dict[str, DecodeGroupSeedResult] = self._load()
 
-    def _load(self) -> dict[str, DecodeGroupSeedResult]:
+    def _load(self) -> Dict[str, DecodeGroupSeedResult]:
         local_seeds = {}
 
         if not pathlib.Path(self.save_path).exists():
@@ -45,7 +46,7 @@ class LocalSeed:
         del self.seeds[group_id]
         self._dump()
 
-    def get_all_seeds(self) -> dict[str, DecodeGroupSeedResult]:
+    def get_all_seeds(self) -> Dict[str, DecodeGroupSeedResult]:
         return self.seeds
 
     def get_seed(self, group_id: str) -> DecodeGroupSeedResult:
@@ -54,7 +55,7 @@ class LocalSeed:
             raise ValueError("group not found")
         return seed
 
-    def get_chain_urls(self, group_id: str) -> list[ChainURL]:
+    def get_chain_urls(self, group_id: str) -> List[ChainURL]:
         seed = self.get_seed(group_id)
         return seed.chain_urls
 

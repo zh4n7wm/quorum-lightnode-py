@@ -2,7 +2,7 @@ import json
 import pathlib
 from typing import Any
 from urllib.parse import urljoin
-from typing import Union
+from typing import Union, Dict, List
 
 import requests
 
@@ -45,13 +45,13 @@ class LightNode:
             raise ValueError("group not found")
         return self.localseed.seeds[group_id]
 
-    def list_group_seeds(self) -> dict[str, DecodeGroupSeedResult]:
+    def list_group_seeds(self) -> Dict[str, DecodeGroupSeedResult]:
         return self.localseed.get_all_seeds()
 
     def update_chain_api(self, group_id: str, chain_url: str) -> None:
         self.localseed.update_chain_url(group_id, chain_url)
 
-    def get_encrypt_pub_keys(self, group_id: str) -> list[str]:
+    def get_encrypt_pub_keys(self, group_id: str) -> List[str]:
         chain_url = self.localseed.get_chain_urls(group_id)[0]
         url = urljoin(chain_url.baseurl, f"/api/v1/node/getencryptpubkeys/{group_id}")
         headers = {
@@ -64,7 +64,7 @@ class LightNode:
 
     def get_trx(
         self, group_id: str, trx_id: str, age_priv_key: Union[str, None] = None
-    ) -> dict[str, Any]:
+    ) -> Dict[str, Any]:
         seed = self.get_group_seed(group_id)
         chain_url = self.localseed.get_chain_urls(group_id)[0]
         url = urljoin(chain_url.baseurl, f"/api/v1/trx/{group_id}/{trx_id}")
@@ -86,7 +86,7 @@ class LightNode:
         return trx
 
     def post_to_group(
-        self, group_id: str, private_key: bytes, obj: dict[str, Any]
+        self, group_id: str, private_key: bytes, obj: Dict[str, Any]
     ) -> Union[str, None]:
         if not obj:
             raise ValueError("empty obj")
@@ -141,7 +141,7 @@ class LightNode:
         count: int = 20,
         reverse: bool = False,
         age_priv_key: Union[str, None] = None,
-    ) -> list[dict[str, Any]]:
+    ) -> List[Dict[str, Any]]:
         seed = self.localseed.seeds.get(group_id)
         if not seed:
             raise ValueError("group not found")

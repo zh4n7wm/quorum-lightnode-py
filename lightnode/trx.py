@@ -3,7 +3,7 @@ import hashlib
 import json
 import time
 import uuid
-from typing import Any, Dict, Union
+from typing import Any, Dict, List, Union
 
 import eth_keys
 
@@ -61,7 +61,7 @@ def prepare_send_trx(  # pylint: disable=too-many-locals
     aes_key: bytes,
     private_key: bytes,
     obj: Dict[str, Any],
-    recipients: Union[list[str], None],
+    recipients: Union[List[str], None],
 ) -> Dict[str, str]:
     data = json.dumps(obj).encode()
     encrypted = None

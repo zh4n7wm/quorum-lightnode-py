@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from typing import List
 
 from dataclasses_json import dataclass_json
 
@@ -30,4 +31,4 @@ class ChainURL:
 @dataclass
 class DecodeGroupSeedResult:
     seed: GroupSeed
-    chain_urls: list[ChainURL] = field(default_factory=lambda: [])
+    chain_urls: List[ChainURL] = field(default_factory=lambda: [])

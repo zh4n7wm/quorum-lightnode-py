@@ -2,11 +2,12 @@
 encrypt/decrypt data with age
 """
 import os
+from typing import List
 
 from pyrage import decrypt, encrypt, passphrase, x25519  # pylint: disable-msg=E0611
 
 
-def age_encrypt(recipients: list[x25519.Recipient], data: bytes) -> bytes:
+def age_encrypt(recipients: List[x25519.Recipient], data: bytes) -> bytes:
     if not data:
         assert "invalid data"  # pylint: disable=assert-on-string-literal
     if not recipients:
