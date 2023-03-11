@@ -92,8 +92,6 @@ class LightNode:
             raise ValueError("empty obj")
         if not isinstance(obj, dict):
             raise ValueError("obj should be a dict object")
-        if "type" not in obj or "content" not in obj:
-            raise ValueError("type and content must in obj")
 
         seed = self.localseed.seeds.get(group_id)
         if not seed:
