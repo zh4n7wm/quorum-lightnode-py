@@ -19,7 +19,7 @@ def get_announce_param(
     action: str,
     _type: str,
     memo: Union[str, None] = None,
-) -> dict[str, dict[str, Any]]:
+) -> Dict[str, Dict[str, Any]]:
     eth_priv = eth_keys.keys.PrivateKey(private_key)
 
     item = pbQuorum.AnnounceItem()
