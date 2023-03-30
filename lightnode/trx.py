@@ -82,8 +82,6 @@ def prepare_send_trx(  # pylint: disable=too-many-locals
         "Data": encrypted,
         "TimeStamp": int(now * 1e9),
         "Version": "2.0.0",
-        "Expired": int((now + 30) * 1e9),
-        "Nonce": nonce,
         "SenderPubkey": sender_pubkey,
     }
     logger.debug("trx object: %s", trx)
@@ -94,17 +92,15 @@ def prepare_send_trx(  # pylint: disable=too-many-locals
     signature = priv.sign_msg_hash(_hash).to_bytes()
     trx["SenderSign"] = signature
 
-    trx_pb = pbQuorum.Trx(**trx)  # pylint: disable=no-member
-    trx_json_str = json.dumps(
-        {
-            "TrxBytes": base64.b64encode(trx_pb.SerializeToString()).decode(),
-        }
-    )
-    logger.debug("trx protobuf: %s", trx_pb)
-    enc_trx_json = aes_encrypt(aes_key, trx_json_str.encode())
-
-    send_trx_obj = {
-        "GroupId": group_id,
-        "TrxItem": base64.b64encode(enc_trx_json).decode(),
+    # Note: for rest api payload
+    _trx = {
+        "group_id": trx["GroupId"],
+        "trx_id": trx["TrxId"],
+        "data": base64.b64encode(trx["Data"]).decode(),
+        "timestamp": str(trx["TimeStamp"]),
+        "version": trx["Version"],
+        "sender_pubkey": trx["SenderPubkey"],
+        "sender_sign": base64.b64encode(trx["SenderSign"]).decode(),
     }
-    return send_trx_obj
+
+    return _trx

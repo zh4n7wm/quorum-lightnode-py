@@ -1,11 +1,13 @@
 import base64
+import json
 import hashlib
 import time
-from typing import Union, Dict
+from typing import Union, Dict, Any
 
 from lightnode.utils import aes_encrypt
 
 from .pb import quorum_pb2 as pbQuorum
+from google.protobuf.json_format import MessageToJson, MessageToDict
 import eth_keys
 
 
@@ -17,7 +19,7 @@ def get_announce_param(
     action: str,
     _type: str,
     memo: Union[str, None] = None,
-) -> Dict[str, str]:
+) -> dict[str, dict[str, Any]]:
     eth_priv = eth_keys.keys.PrivateKey(private_key)
 
     item = pbQuorum.AnnounceItem()
@@ -58,10 +60,7 @@ def get_announce_param(
     if memo:
         item.Memo = memo
 
-    req_data = aes_encrypt(aes_key, item.SerializeToString())
     payload = {
-        "group_id": group_id,
-        "Req": base64.b64encode(req_data).decode(),
+        "data": MessageToDict(item),
     }
-
     return payload

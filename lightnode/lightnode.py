@@ -1,7 +1,7 @@
 import json
 import pathlib
 from typing import Any
-from urllib.parse import urljoin
+from urllib.parse import urljoin, unquote
 from typing import Union, Dict, List
 
 import requests
@@ -34,6 +34,7 @@ class LightNode:
         return decode_group_seed(seed_url)
 
     def join_group(self, seed_url: str) -> None:
+        seed_url = unquote(seed_url)
         seed = self.decode_group_seed(seed_url)
         self.localseed.save_seed(seed)
 
@@ -120,7 +121,7 @@ class LightNode:
         assert chain_api.baseurl.startswith("http")
         assert chain_api.jwt
 
-        url = urljoin(chain_api.baseurl, f"/api/v1/node/trx/{group_id}")
+        url = urljoin(chain_api.baseurl, f"/api/v1/node/{group_id}/trx")
         headers = {
             "Authorization": f"Bearer {chain_api.jwt}",
         }
@@ -145,14 +146,14 @@ class LightNode:
             raise ValueError("group not found")
 
         aes_key = bytes.fromhex(seed.seed.cipher_key)
-        payload = get_content_param(aes_key, group_id, start_trx, count, reverse)
+        params = get_content_param(aes_key, group_id, start_trx, count, reverse)
 
         chain_api = seed.chain_urls[0]
-        url = urljoin(chain_api.baseurl, f"/api/v1/node/groupctn/{group_id}")
+        url = urljoin(chain_api.baseurl, f"/api/v1/node/{group_id}/groupctn")
         headers = {
             "Authorization": f"Bearer {chain_api.jwt}",
         }
-        req = requests.post(url, json=payload, headers=headers)
+        req = requests.get(url, params=params, headers=headers)
         result: list[Content] = []
         is_private_group = seed.seed.encryption_type == "private"
         for item in req.json():
@@ -187,7 +188,7 @@ class LightNode:
         )
 
         chain_api = seed.chain_urls[0]
-        url = urljoin(chain_api.baseurl, f"/api/v1/node/announce/{group_id}")
+        url = urljoin(chain_api.baseurl, f"/api/v1/node/{group_id}/announce")
         headers = {
             "Authorization": f"Bearer {chain_api.jwt}",
         }
