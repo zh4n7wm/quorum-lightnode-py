@@ -56,7 +56,7 @@ def get_announce_param(
     signature = eth_priv.sign_msg_hash(_hash).to_bytes()
 
     item.AnnouncerSignature = signature.hex()
-    item.TimeStamp = int(time.time() * 1e6)
+    item.TimeStamp = int(time.time() * 1e9)
     if memo:
         item.Memo = memo
 
