@@ -23,10 +23,10 @@ def age_encrypt(recipients: List[x25519.Recipient], data: bytes) -> bytes:
     return encrypt(data, _recipients)
 
 
-def age_decrypt(recipient: x25519.Recipient, data: bytes):
-    if isinstance(recipient, str):
-        recipient = x25519.Recipient.from_str(recipient)
-    return decrypt(data, [recipient])
+def age_decrypt(identity: x25519.Identity, data: bytes):
+    if isinstance(identity, str):
+        identity = x25519.Identity.from_str(identity)
+    return decrypt(data, [identity])
 
 
 def age_pubkey_from_str(pubkey: str) -> x25519.Recipient:
